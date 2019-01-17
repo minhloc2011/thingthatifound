@@ -14,6 +14,7 @@
 - Why i am in the top? [AWESOME](https://github.com/sindresorhus/awesome)
 - [Awesome about design parttern](https://github.com/DovAmir/awesome-design-patterns)
 - [Frontend performance checklist](https://github.com/thedaviddias/Front-End-Performance-Checklist)
+- [30 second of code](https://github.com/30-seconds/30-seconds-of-code)
 
 ### React
 
