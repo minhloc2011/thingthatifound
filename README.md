@@ -11,10 +11,10 @@
 
 ## Computer
 
-- Why i am in the top? [AWESOME](https://github.com/sindresorhus/awesome)
-- [Awesome about design parttern](https://github.com/DovAmir/awesome-design-patterns)
-- [Frontend performance checklist](https://github.com/thedaviddias/Front-End-Performance-Checklist)
-- [30 second of code](https://github.com/30-seconds/30-seconds-of-code)
+- Why I am in the Top? [AWESOME](https://github.com/sindresorhus/awesome)
+- [Awesome about Design Parttern](https://github.com/DovAmir/awesome-design-patterns)
+- [Frontend Performance Checklist](https://github.com/thedaviddias/Front-End-Performance-Checklist)
+- [30 Seconds of Code](https://github.com/30-seconds/30-seconds-of-code)
 
 ### React
 
@@ -26,6 +26,8 @@
 
 - Style guide
   - [Airbnb](https://github.com/airbnb/javascript)
+- Knowledge
+  - [33 JS Concepts](https://github.com/leonardomso/33-js-concepts)
 - Design Parttern
   - [Book - Learning JavaScript Design Patterns](https://addyosmani.com/resources/essentialjsdesignpatterns/book/#revealingmodulepatternjavascripthttp://jstherightway.org/%23patterns)
   
