@@ -1,0 +1,174 @@
+Localstack
+
+Start docker compose: TMPDIR=/private$TMPDIR docker-compose up -d
+
+1. S3
+
+- Create bucket =>ex: demo-bucket
+awslocal --endpoint-url=http://localhost:4572 s3 mb s3://demo-bucket
+
+- Attach an ACL to the bucket so it is readable
+awslocal s3api put-bucket-acl --bucket demo-bucket --acl public-read
+
+- Upload a file to S3 bucket
+echo Hello World! >> helloworld.txt
+awslocal s3 cp helloworld.txt s3://demo-bucket
+
+- List all objects
+awslocal s3 ls
+awslocal s3 ls s3://demo-bucket
+
+2. Lambda
+
+- List all lambda functions
+awslocal lambda list-functions
+
+- Create lambda function => ex: LC_Success_Log_local
+awslocal lambda create-function --function-name LC_Success_Log_Notify --code S3Bucket="__local__",S3Key="/Users/macintosh/Projects/log_collector/lambda_apis" --handler success_log_notify.process --runtime nodejs8.10 --role arn:aws:iam::123456:role/role-name --environment Variables={ENVIRONMENT=development}
+
+- Get lambda function =>ex: LC_Success_Log_local
+awslocal lambda get-function --function-name LC_Success_Log_local
+
+- Update trigger event source mapping =>ex: mapping to sqs arn
+awslocal lambda create-event-source-mapping --event-source-arn arn:aws:sqs:elasticmq:000000000000:LC_Success_Log_Queue --function-name LC_Success_Log_Notify
+
+- Invoke log function
+awslocal lambda invoke --function-name LC_Success_Log_Notify outfile.txt
+
+3. Kinesis
+
+- Create kinesis stream =>ex: core-kinesis-local
+awslocal kinesis create-stream --stream-name core-kinesis-local --shard-count 1
+
+- List all kinesis stream
+awslocal kinesis list-streams
+
+- Kinesis get shard Iterator
+awslocal kinesis get-shard-iterator --stream-name core-kinesis-local --shard-id shardId-000000000000 --shard-iterator-type TRIM_HORIZON
+
+- Kinesis get record
+awslocal kinesis get-records --shard-iterator AAAAAAAAAAFQzjGFh/Jja+D+TXxKwDpdshifQ+HJIc+AuPg1QvdQXOQ5Z1Y7KDLKdb/gGfAxgMifVXThzQlKd3FPG+MS0KLxP5qEWHdBRkwq8p0ycYnUFNsf8DILvMWbrEv/q/169JBIWIiN0ARbQvZPQe2OP70CpmnbG/M3zm5yuAjg6wAZ0o1jvWsZzP2raElBfEaBdf59wnf7YbHli3Jj5qqu86Gh
+
+4. Elasticsearch
+
+- Create domain =>ex: core_main
+awslocal es create-elasticsearch-domain --domain-name core_main
+
+- List domain names
+awslocal es list-domain-names
+
+5. SQS
+
+- Create sqs queue =>ex: LC_Success_Log_Queue
+awslocal sqs create-queue --queue-name LC_Success_Log_Queue
+
+- Get event source arn 
+awslocal sqs get-queue-attributes --queue-url http://localhost:4576/queue/LC_Success_Log_Queue --attribute-name QueueArn
+
+- Receive message
+awslocal sqs receive-message --queue-url http://localhost:4576/queue/LC_Success_Log_Queue
+
+
+LC - Localstack - success log
+
+Create lambda function
+
+awslocal lambda create-function --function-name LC_Success_Log_API --code S3Bucket="__local__",S3Key="/Users/macintosh/Projects/log_collector/lambda_apis" --handler api_log_success.handler --runtime nodejs8.10 --role arn:aws:iam::123456:role/role-name --environment Variables={ENVIRONMENT=development}
+
++ Get lambda ARN: arn:aws:lambda:us-east-1:000000000000:function:LC_Success_Log_API
+
+Create apigateway
+
+awslocal apigateway create-rest-api --name lc_success_log_api
+
+awslocal apigateway get-rest-apis
++ Apigateway API-ID: "5880079883"
+
+- Get PARENT_RESOURCE_ID
+awslocal apigateway get-resources --rest-api-id 1246060588
++ PARENT_RESOURCE_ID: "0482534516"
+
+- Create resource apigateway
+awslocal apigateway create-resource --rest-api-id 1246060588 --parent-id 5287337843 --path-part "api/success_logs"
+
+- Get resource id: 123456
+awslocal apigateway get-resources --rest-api-id 1246060588
++ RESOURCE_ID: id of somethingId: 403613A-ZA-Z09
+
+- Apigateway put method
+awslocal apigateway put-method --rest-api-id 1246060588 --resource-id 7409345600 --http-method POST --authorization-type "NONE"
+
+- Apigateway put-integration
+awslocal apigateway put-integration --rest-api-id 1246060588 --resource-id 7409345600 --http-method POST --type AWS_PROXY --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:LC_Success_Log_API/invocations --passthrough-behavior WHEN_NO_MATCH
+
+
+- Apigateway deployment
+awslocal apigateway create-deployment --region us-east-1 --rest-api-id 1246060588 --stage-name development
+
+- Test CURL
+curl --header "Content-Type: application/json" --request POST --data '{"username":"xyz","password":"xyz"}'  http://localhost:4567/restapis/7444110327/development/_user_request_/create/tickets
+
+- Invoke log function
+awslocal lambda invoke --function-name LC_Success_Log_API outfile.txt
+
+
+
+TL - Localstack - export ticket
+
+Create lambda function
+
+awslocal lambda create-function --function-name TL_export_ticket --code S3Bucket="__local__",S3Key="/Users/macintosh/Projects/teamlab/lambda" --handler ticket_export.export_csv --runtime nodejs8.10 --role arn:aws:iam::123456:role/role-name --environment Variables={ENVIRONMENT=development}
+
++ Get lambda ARN: arn:aws:lambda:us-east-1:000000000000:function:TL_export_ticket
+
+Create apigateway
+
+awslocal apigateway create-rest-api --name export_ticket_api
+
+awslocal apigateway get-rest-apis
++ Apigateway API-ID: "5880079883"
+
+- Get PARENT_RESOURCE_ID
+awslocal apigateway get-resources --rest-api-id 4376445610
++ PARENT_RESOURCE_ID: "6130102031"
+
+- Create resource apigateway
+awslocal apigateway create-resource --rest-api-id 4376445610 --parent-id 3034609690 --path-part "export/tickets"
+
+- Get resource id: 123456
+awslocal apigateway get-resources --rest-api-id 4376445610
++ RESOURCE_ID: id of somethingId: A-Z465954244
+
+- Apigateway put method
+awslocal apigateway put-method --rest-api-id 4376445610 --resource-id 5918151A-Z09 --http-method GET --authorization-type "NONE"
+
+- Apigateway put-integration
+awslocal apigateway put-integration --rest-api-id 4376445610 --resource-id 5918151A-Z09 --http-method GET --type AWS_PROXY --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:TL_export_ticket/invocations --passthrough-behavior WHEN_NO_MATCH
+
+
+- Apigateway deployment
+awslocal apigateway create-deployment --region us-east-1 --rest-api-id 4376445610 --stage-name development
+
+- Test CURL
+curl --header "Content-Type: application/json" --request POST --data '{"username":"xyz","password":"xyz"}'  http://localhost:4567/restapis/7444110327/development/_user_request_/create/tickets
+
+- Invoke log function
+awslocal lambda invoke --function-name TL_export_ticket outfile.txt
+
+DynamoDB
+- Create table
+awslocal dynamodb create-table --table-name teamlab_export_history_development --attribute-definitions AttributeName=is_dynamo,AttributeType=S AttributeName=created_at,AttributeType=S AttributeName=export_status,AttributeType=S --key-schema AttributeName=is_dynamo,KeyType=HASH AttributeName=created_at,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --global-secondary-indexes 'IndexName=export_status-index,KeySchema=[{AttributeName=export_status,KeyType=HASH},{AttributeName=created_at,KeyType=RANGE}],Projection={ProjectionType=ALL},ProvisionedThroughput={ReadCapacityUnits=10,WriteCapacityUnits=10}'
+
+
+
+
+
+Tips connect Localstack
+
+this.dynamoDBClient = new this.awsSdk.DynamoDB.DocumentClient({endpoint: `http://${process.env.LOCALSTACK_HOSTNAME}:4569`})
+
+this.s3 = new this.awsSdk.S3({endpoint: 'http://192.168.208.1:4572', s3ForcePathStyle: true})
+
+
+
+
